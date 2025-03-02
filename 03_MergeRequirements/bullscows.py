@@ -1,5 +1,7 @@
 from typing import Tuple
 import random
+import sys
+import urllib.request
 
 def bullscows(guess: str, secret: str) -> Tuple[int, int]:
     bulls = sum(g == s for g, s in zip(guess, secret))
@@ -27,4 +29,26 @@ def ask(prompt: str, valid: list[str] = None) -> str:
         print("Недопустимое слово. Попробуйте еще раз.")
 
 def inform(format_string: str, bulls: int, cows: int) -> None:
-    print(format_string.format(bulls, cows))
+    print(format_string.format(bulls, cows)) 
+
+def main():
+    l =  len(sys.argv)
+    words_length = 5
+    if l < 2:
+        print("Использование: python -m bullscows <словарь> [длина]")
+        return
+    elif l > 2:
+        words_length = int(sys.argv[2])
+    try:
+        words = urllib.request.urlopen(sys.argv[1]).read().decode().split('\n')
+    except ValueError:
+        words = open(sys.argv[1]).read().split('\n')
+
+    words = [i for i in words if len(i) == words_length]
+    if not words:
+        print(f"В словаре нет слов с длиной {words_length}!")
+        return
+    print("Неплохо сыграно! Количество попыток:", gameplay(ask, inform, words))
+
+if __name__ == "__main__":
+    main()
