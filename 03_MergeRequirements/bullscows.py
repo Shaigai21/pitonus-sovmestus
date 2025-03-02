@@ -22,6 +22,16 @@ def gameplay(ask: callable, inform: callable, words: list[str]) -> int:
         if guess == secret_word:
             return attempts
 
+
+def ask_my_cow(prompt: str, valid: list[str] = None) -> str:
+    with open("ashley.cow", "r") as f:
+        print(cowsay.cowsay(prompt, cowfile=cowsay.read_dot_cow(f)))
+    while True:
+        word = input("> ")
+        if valid is None or word in valid:
+            return word
+        print("Недопустимое слово. Попробуйте еще раз.")
+
 def ask(prompt: str, valid: list[str] = None) -> str:
     print(cowsay.cowsay(prompt, cow=random.choice(list(cowsay.list_cows()))))
     while True:
@@ -32,6 +42,11 @@ def ask(prompt: str, valid: list[str] = None) -> str:
 
 def inform(format_string: str, bulls: int, cows: int) -> None:
     print(cowsay.cowsay(format_string.format(bulls, cows), cow=random.choice(list(cowsay.list_cows()))))
+
+def inform_my_cow(format_string: str, bulls: int, cows: int) -> None:
+    with open("ashley.cow", "r") as f:
+        print(cowsay.cowsay(format_string.format(bulls, cows), cowfile=cowsay.read_dot_cow(f)))
+
 
 def main():
     l =  len(sys.argv)
@@ -50,7 +65,7 @@ def main():
     if not words:
         print(f"В словаре нет слов с длиной {words_length}!")
         return
-    print("Неплохо сыграно! Количество попыток:", gameplay(ask, inform, words))
+    print("Неплохо сыграно! Количество попыток:", gameplay(ask_my_cow, inform_my_cow, words))
 
 if __name__ == "__main__":
     main()
