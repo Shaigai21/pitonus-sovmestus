@@ -18,3 +18,13 @@ def gameplay(ask: callable, inform: callable, words: list[str]) -> int:
         
         if guess == secret_word:
             return attempts
+
+def ask(prompt: str, valid: list[str] = None) -> str:
+    while True:
+        word = input(prompt)
+        if valid is None or word in valid:
+            return word
+        print("Недопустимое слово. Попробуйте еще раз.")
+
+def inform(format_string: str, bulls: int, cows: int) -> None:
+    print(format_string.format(bulls, cows))
