@@ -2,6 +2,7 @@ from typing import Tuple
 import random
 import sys
 import urllib.request
+import cowsay
 
 def bullscows(guess: str, secret: str) -> Tuple[int, int]:
     bulls = sum(g == s for g, s in zip(guess, secret))
@@ -13,7 +14,7 @@ def gameplay(ask: callable, inform: callable, words: list[str]) -> int:
     attempts = 0
     
     while True:
-        guess = ask("Введите слово: ", words)
+        guess = ask("Введите слово", words)
         attempts += 1
         bulls, cows = bullscows(guess, secret_word)
         inform("Быки: {}, Коровы: {}", bulls, cows)
@@ -22,14 +23,15 @@ def gameplay(ask: callable, inform: callable, words: list[str]) -> int:
             return attempts
 
 def ask(prompt: str, valid: list[str] = None) -> str:
+    print(cowsay.cowsay(prompt, cow=random.choice(list(cowsay.list_cows()))))
     while True:
-        word = input(prompt)
+        word = input("> ")
         if valid is None or word in valid:
             return word
         print("Недопустимое слово. Попробуйте еще раз.")
 
 def inform(format_string: str, bulls: int, cows: int) -> None:
-    print(format_string.format(bulls, cows)) 
+    print(cowsay.cowsay(format_string.format(bulls, cows), cow=random.choice(list(cowsay.list_cows()))))
 
 def main():
     l =  len(sys.argv)
