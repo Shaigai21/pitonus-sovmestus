@@ -72,6 +72,21 @@ class CowShell(cmd.Cmd):
             combined.append(line1.ljust(width) + line2)
         print("\n".join(combined))
 
+    def complete_cowsay(self, text, line, begidx, endidx):
+        """Автодополнение для команды cowsay."""
+        args = shlex.split(line[:begidx])
+        if not args or len(args) == 1:
+            return []
+        try:
+            if args.index("reply") + 1 == len(args):
+                return []
+        except ValueError:
+            pass
+
+        if args[-1] in cowsay.list_cows() or "=" in args[-1]:
+            return []
+        return [cow for cow in cowsay.list_cows() if cow.startswith(text)]
+
     def do_cowthink(self, arg):
         """Корова думает.
         Использование: cowthink <сообщение> [[название] [параметр=значение...]]
@@ -92,6 +107,16 @@ class CowShell(cmd.Cmd):
                     key, value = a.split("=", 1)
                     kwargs[key] = value
         print(cowsay.cowthink(message, cow=cow, **kwargs))
+
+    def complete_cowthink(self, text, line, begidx, endidx):
+        """Автодополнение для команды cowthink."""
+        args = shlex.split(line[:begidx])
+        if not args or len(args) == 1:
+            return []
+
+        if args[-1] in cowsay.list_cows() or "=" in args[-1]:
+            return []
+        return [cow for cow in cowsay.list_cows() if cow.startswith(text)]
 
     def do_exit(self, arg):
         """Выйти из CowShell."""
