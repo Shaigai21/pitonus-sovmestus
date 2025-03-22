@@ -1,5 +1,6 @@
 import cmd
 import socket
+import threading
 import readline
 
 class CowChatClient(cmd.Cmd):
@@ -20,6 +21,9 @@ class CowChatClient(cmd.Cmd):
         self.update_cow_names()
         self.update_users()
 
+        self.receive_thread = threading.Thread(target=self.receive_messages, daemon=True)
+        self.receive_thread.start()
+
     def _recv_initial_message(self):
         """Чтение начального сообщения от сервера после подключения."""
         initial_message = self.socket.recv(1024).decode().strip()
@@ -38,17 +42,26 @@ class CowChatClient(cmd.Cmd):
         if response.startswith('Registered users: '):
             self.users = set(response.split(': ')[1].split(', '))
 
+    def receive_messages(self):
+        """Функция для чтения сообщений от сервера в фоновом режиме."""
+        while True:
+            try:
+                response = self.socket.recv(1024).decode().strip()
+                if response:
+                    if response.startswith('Logged in as'):
+                        self.me = response[13:]
+                        self.update_users()
+                    print(f"\n{response}\n{self.prompt}{readline.get_line_buffer()}", end="", flush=True)
+            except ConnectionResetError:
+                print("\nConnection to the server was lost.")
+                break
+
     def do_login(self, arg):
         """Login to the chat using a cow name: login <cow_name>"""
         if not arg:
             print("Usage: login <cow_name>")
             return
         self.socket.sendall(f'login {arg}\n'.encode())
-        response = self.socket.recv(1024).decode().strip()
-        print(response)
-        if response.startswith('Logged in as'):
-            self.me = arg
-            self.update_users()
 
     def complete_login(self, text, line, begidx, endidx):
         if not text:
@@ -64,14 +77,10 @@ class CowChatClient(cmd.Cmd):
     def do_who(self, arg):
         """List registered users: who"""
         self.socket.sendall(b'who\n')
-        response = self.socket.recv(1024).decode().strip()
-        print(response)
 
     def do_cows(self, arg):
         """List available cow names: cows"""
         self.socket.sendall(b'cows\n')
-        response = self.socket.recv(1024).decode().strip()
-        print(response)
 
     def do_EOF(self, arg):
         """Exit the chat: Ctrl+D"""
